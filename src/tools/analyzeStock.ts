@@ -11,16 +11,26 @@ export async function analyzeStock(message: string): Promise<string> {
     symbol = "BBCA"
   }
 
-  const ticker = `${symbol.toUpperCase()}.JK`
-
   try {
-    const quote = await yahooFinance.quote(ticker)
+    const res = await fetch(
+      "https://www.idx.co.id/primary/TradingSummary/GetStockSummary"
+    )
 
-    const price = quote.regularMarketPrice
-    const open = quote.regularMarketOpen
-    const high = quote.regularMarketDayHigh
-    const low = quote.regularMarketDayLow
-    const change = quote.regularMarketChangePercent
+    const data = await res.json() as { Data: Array<{ Code: string; LastPrice: number; Open: number; High: number; Low: number; ChangePercent: number }> }
+
+    const stock = data.Data.find(
+      (s: any) => s.Code === symbol.toUpperCase()
+    )
+
+    if (!stock) {
+      return `Stock ${symbol} not found`
+    }
+
+    const price = stock.LastPrice
+    const open = stock.Open
+    const high = stock.High
+    const low = stock.Low
+    const change = stock.ChangePercent
     const aiAnalysis = await askAI(`
         Analyze this stock for short term trading.
 
