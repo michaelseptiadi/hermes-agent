@@ -13,7 +13,14 @@ router.post("/", async (req: Request, res: Response) => {
     return
   }
 
-  const reply = await askHermes(message)
+  let reply: string
+  try {
+    reply = await askHermes(message)
+  } catch (err) {
+    console.error("[askHermes error]", err)
+    res.send("ok")
+    return
+  }
 
   await fetch(
     `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
@@ -54,7 +61,16 @@ async function askHermes(prompt: string): Promise<string> {
     })
   })
 
-  const data = await res.json() as { choices: { message: { content: string } }[] }
+  const data = await res.json() as {
+    choices?: { message: { content: string } }[]
+    error?: { message: string }
+  }
+
+  if (!res.ok || data.error || !data.choices?.length) {
+    const errMsg = data.error?.message ?? `HTTP ${res.status}`
+    console.error("[OpenRouter error]", errMsg, JSON.stringify(data))
+    throw new Error(`OpenRouter API error: ${errMsg}`)
+  }
 
   return data.choices[0].message.content
 }
