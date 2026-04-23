@@ -16,10 +16,10 @@ export async function analyzeStock(message: string): Promise<string> {
       "https://www.idx.co.id/primary/TradingSummary/GetStockSummary"
     )
 
-    const data = await res.json() as { Data: Array<{ Code: string; LastPrice: number; Open: number; High: number; Low: number; ChangePercent: number }> }
+    const data = await res.json() as { data: Array<{ StockCode: string; LastPrice: number; OpenPrice: number; High: number; Low: number; ChangePercent: number }> }
 
-    const stock = data.Data.find(
-      (s: any) => s.Code === symbol.toUpperCase()
+    const stock = data.data.find(
+      (s: any) => s.StockCode === symbol.toUpperCase()
     )
 
     if (!stock) {
@@ -27,7 +27,7 @@ export async function analyzeStock(message: string): Promise<string> {
     }
 
     const price = stock.LastPrice
-    const open = stock.Open
+    const open = stock.OpenPrice
     const high = stock.High
     const low = stock.Low
     const change = stock.ChangePercent
