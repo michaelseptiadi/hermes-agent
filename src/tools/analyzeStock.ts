@@ -4,16 +4,16 @@ const yahooFinance = require("yahoo-finance2").default
 
 export async function analyzeStock(message: string): Promise<string> {
 
-  const symbol = message.split(" ")[1]
+  const parts = message.trim().split(/\s+/)
+  let symbol = parts[1]
 
   if (!symbol) {
-    return "Usage: /stock BBCA"
+    symbol = "BBCA"
   }
 
   const ticker = `${symbol.toUpperCase()}.JK`
 
   try {
-
     const quote = await yahooFinance.quote(ticker)
 
     const price = quote.regularMarketPrice
@@ -35,6 +35,6 @@ export async function analyzeStock(message: string): Promise<string> {
     return aiAnalysis
 
   } catch (error) {
-    return `Stock ${symbol} not found`
+    return `Stock ${symbol} not found \n\nError: ${error}`
   }
 }
