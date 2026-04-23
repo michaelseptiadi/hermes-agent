@@ -40,10 +40,13 @@ router.post("/", async (req: Request, res: Response) => {
 })
 
 async function askHermes(prompt: string): Promise<string> {
+  const key = process.env.OPENROUTER_API_KEY
+  console.log("[OpenRouter key]", key ? `set (${key.slice(0, 8)}...)` : "MISSING")
+
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      Authorization: `Bearer ${key}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
