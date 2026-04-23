@@ -1,15 +1,40 @@
+import { askAI } from "./askAI"
+
+const yahooFinance = require("yahoo-finance2").default
+
 export async function analyzeStock(message: string): Promise<string> {
-  const symbol = message.split(" ")[1]?.toUpperCase()
+
+  const symbol = message.split(" ")[1]
 
   if (!symbol) {
     return "Usage: /stock BBCA"
   }
 
-  return `📊 *Stock Analysis: ${symbol}*
+  const ticker = `${symbol.toUpperCase()}.JK`
 
-Trend: Bullish 📈
-Support: 9,200
-Resistance: 9,700
+  try {
 
-_(This is a demo analysis. Real data coming soon.)_`
+    const quote = await yahooFinance.quote(ticker)
+
+    const price = quote.regularMarketPrice
+    const open = quote.regularMarketOpen
+    const high = quote.regularMarketDayHigh
+    const low = quote.regularMarketDayLow
+    const change = quote.regularMarketChangePercent
+    const aiAnalysis = await askAI(`
+        Analyze this stock for short term trading.
+
+        Symbol: ${symbol}
+        Price: ${price}
+        Open: ${open}
+        High: ${high}
+        Low: ${low}
+        Change: ${change}%
+    `)
+
+    return aiAnalysis
+
+  } catch (error) {
+    return `Stock ${symbol} not found`
+  }
 }
