@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express"
+import { runAgent } from "../agent/runAgent"
 
 const router = Router()
 
@@ -15,9 +16,9 @@ router.post("/", async (req: Request, res: Response) => {
 
   let reply: string
   try {
-    reply = await askHermes(message)
+    reply = await runAgent(message)
   } catch (err) {
-    console.error("[askHermes error]", err)
+    console.error("[runAgent error]", err)
     res.send("ok")
     return
   }
@@ -38,44 +39,5 @@ router.post("/", async (req: Request, res: Response) => {
 
   res.send("ok")
 })
-
-async function askHermes(prompt: string): Promise<string> {
-  const key = process.env.OPENROUTER_API_KEY
-  console.log("[OpenRouter key]", key ? `set (${key.slice(0, 8)}...)` : "MISSING")
-
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      model: "openai/gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are a helpful tech news assistant."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ]
-    })
-  })
-
-  const data = await res.json() as {
-    choices?: { message: { content: string } }[]
-    error?: { message: string }
-  }
-
-  if (!res.ok || data.error || !data.choices?.length) {
-    const errMsg = data.error?.message ?? `HTTP ${res.status}`
-    console.error("[OpenRouter error]", errMsg, JSON.stringify(data))
-    throw new Error(`OpenRouter API error: ${errMsg}`)
-  }
-
-  return data.choices[0].message.content
-}
 
 export default router
